@@ -18,6 +18,8 @@ public static class GlobalVars
         }
         set => _Port = value;
     }
+
+    public static string StockFishPath = "";
     public static string PortPath = $"{Directory.GetCurrentDirectory()}/Port";
 
     private static int FreeTcpPort()

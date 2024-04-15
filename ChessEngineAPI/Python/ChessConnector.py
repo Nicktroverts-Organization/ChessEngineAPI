@@ -1,7 +1,7 @@
 import chess
 import chess.engine
 
-engine = chess.engine.SimpleEngine.popen_uci(r"C:\Users\Praktikant\Downloads\stockfish-windows-x86-64-avx2\stockfish\stockfish-windows-x86-64-avx2.exe")
+engine = chess.engine.SimpleEngine.popen_uci(open("StockFishPath").read())
 
 board = chess.Board()
 while not board.is_game_over():
