@@ -105,7 +105,16 @@ public class App
     private static void AddBasePrefixes(HttpListener listener)
     {
         listener.Prefixes.Add($"http://localhost:{GlobalVars.Port}/");
-        //listener.Prefixes.Add($"http://localhost:{GlobalVars.Port}/");
+        //string OwnIP = "";
+        //var host = Dns.GetHostEntry(Dns.GetHostName());
+        //foreach (var ip in host.AddressList)
+        //{
+        //    if (ip.AddressFamily == AddressFamily.InterNetwork)
+        //    {
+        //        OwnIP = ip.ToString();
+        //    }
+        //}
+        //listener.Prefixes.Add($"https://{OwnIP}:{GlobalVars.Port}/");
     }
 
     private static void RemoveBasePrefixes(HttpListener listener) => listener.Prefixes.Clear();
