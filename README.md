@@ -1,9 +1,11 @@
 # ChessEngineAPI
 
 ## **How to setup**
-1. Initialize and save the Port.
-2. CreateInstance and save the Key.
-3. You can now use this api.
+1. Install python.
+2. Open terminal and run "pip install chess".
+3. Initialize and save the Port.
+4. CreateInstance and save the Key.
+5. You can now use this api.
 
 ## **Commands:**
 - INITIALIZE~
