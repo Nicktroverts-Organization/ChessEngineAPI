@@ -12,15 +12,8 @@ mainApp = new App();
 
 Console.WriteLine($"\nFinished initialization of application at port :{GlobalVars.Port}.");
 
-OpenPY("");
-
 while (ApplicationIsRunning)
 {
-    /*
-     * your move: e2e4
-     * g7g5
-     * ^= C# Console output: your move: g7g5
-     */
     string UInput = Console.ReadLine();
     if (UInput.ToLower() == "exit")
     {
@@ -40,7 +33,6 @@ while (ApplicationIsRunning)
 public partial class Program
 {
     public static App mainApp;
-    public static Process PyProcess;
     private static bool ApplicationIsRunning = true;
 
     public static bool IsApplicationRunning
@@ -57,7 +49,10 @@ public partial class Program
     public static void ExitApplication()
     {
         Console.WriteLine("\nStopping application...\n");
-        PyProcess.Kill(true);
+        foreach (var VARIABLE in GlobalVars.PyProcesses)
+        {
+            VARIABLE.Value.GetProcess.Kill(true);
+        }
         ApplicationIsRunning = false;
         HttpClient client = new();
         client.GetAsync($"http://localhost:{GlobalVars.Port}/");
@@ -70,7 +65,7 @@ public partial class Program
         Console.WriteLine(sender.ToString() + " - " + args.Data.ToString());
     }
 
-    private static void OpenPY(string path)
+    public static string OpenPY()
     {
         //Open python script that runs chess engine.
         ProcessStartInfo start = new ProcessStartInfo();
@@ -80,26 +75,13 @@ public partial class Program
         start.RedirectStandardOutput = true;
         start.RedirectStandardInput = true;
         Process process = Process.Start(start);
-        PyProcess = process;
+        string uniqueKey = Guid.NewGuid().ToString();
+        PyProcess pyProcess = new PyProcess(process, uniqueKey);
+        GlobalVars.PyProcesses.Add(uniqueKey, pyProcess);
 
         process.OutputDataReceived += PyProcessOutputHandler;
-        //try
-        //{
-        //    Process.Start(url);
-        //}
-        //catch
-        //{
-        //    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        //    {
-        //        url = url.Replace("&", "^&");
-        //        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-        //    }
-        //    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        //        Process.Start("xdg-open", url);
-        //    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        //        Process.Start("open", url);
-        //    else throw;
-        //}
+
+        return uniqueKey;
     }
 }
 

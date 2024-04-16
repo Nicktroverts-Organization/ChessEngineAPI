@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection.Metadata.Ecma335;
 
 namespace ChessEngineAPI.App;
 
@@ -21,6 +22,7 @@ public static class GlobalVars
 
     public static string StockFishPath = "";
     public static string PortPath = $"{Directory.GetCurrentDirectory()}/Port";
+    public static Dictionary<string, PyProcess> PyProcesses = new Dictionary<string, PyProcess>();
 
     private static int FreeTcpPort()
     {
@@ -32,9 +34,9 @@ public static class GlobalVars
     }
 }
 
-public class Requestable<T> : Attribute
+public class Requestable<T, T2> : Attribute
 {
-    public Action<T> _Action;
+    public Action<T, T2> _Action;
 
     public Requestable()
     {
@@ -44,7 +46,7 @@ public class Requestable<T> : Attribute
 
 public class App
 {
-    public static Dictionary<string, Action<string>> Methods = new();
+    public static Dictionary<string, Action<string, string>> Methods = new();
     public Task ListeningTask;
     public static string LastEngineMove = "";
 
@@ -63,35 +65,34 @@ public class App
 
     private static void InitializeMethods()
     {
-        Methods.Add("HELLO", value => HelloRequest(value));
-        Methods.Add("ECHO", value => EchoRequest(value));
-        Methods.Add("INITIALIZE", value => InitializeRequest(value));
-        Methods.Add("MAKEMOVE", value => MakeMoveRequest(value));
-        Methods.Add("GETENGINEMOVE", value => EngineMoveRequest(value));
+        Methods.Add("HELLO", (value, value2) => HelloRequest(value, value2));
+        Methods.Add("ECHO", (value, value2) => EchoRequest(value, value2));
+        Methods.Add("INITIALIZE", (value, value2) => InitializeRequest(value, value2));
+        Methods.Add("MAKEMOVE", (value, value2) => MakeMoveRequest(value, value2));
+        Methods.Add("GETENGINEMOVE", (value, value2) => EngineMoveRequest(value, value2));
+        Methods.Add("CREATEINSTANCE", (value, value2) => CreateInstanceRequest(value, value2));
     }
 
-    [Requestable<string>]
-    private static void InitializeRequest(string _Input) => GlobalVars.Port = 0;
-    [Requestable<string>]
-    private static void EchoRequest(string _Input) => Console.WriteLine($"\n---\n-{_Input}\n---");
-
-    [Requestable<string>]
-    private static void HelloRequest(string _Input) => Console.WriteLine("\n---_---\n|Hello|\n---_---\n");
-
-    [Requestable<string>]
-    private static void MakeMoveRequest(string _Input)
+    [Requestable<string, string>]
+    private static void CreateInstanceRequest(string key, string _Input)
     {
-        Program.PyProcess.StandardInput.WriteLine(_Input);
-
-        StreamReader reader = new StreamReader(Program.PyProcess.StandardOutput.BaseStream);
-        LastEngineMove = reader.ReadLine().ToString();
+        return;
     }
+    [Requestable<string, string>]
+    private static void InitializeRequest(string key, string _Input) => GlobalVars.Port = 0;
+    [Requestable<string, string>]
+    private static void EchoRequest(string key, string _Input) => Console.WriteLine($"\n---\n-{_Input}\n---");
 
-    [Requestable<string>]
-    private static void EngineMoveRequest(string _Input)
+    [Requestable<string, string>]
+    private static void HelloRequest(string key, string _Input) => Console.WriteLine("\n---_---\n|Hello|\n---_---\n");
+
+    [Requestable<string, string>]
+    private static void MakeMoveRequest(string key, string _Input) => GlobalVars.PyProcesses[key].MakeMove(_Input);
+
+    [Requestable<string, string>]
+    private static void EngineMoveRequest(string key, string _Input)
     {
-        if (LastEngineMove == "")
-            throw new Exception("Called to early. Engine didn't move yet.");
+        return;
     }
 
     private void InitializeHttpListener()
@@ -104,7 +105,7 @@ public class App
     private static void AddBasePrefixes(HttpListener listener)
     {
         listener.Prefixes.Add($"http://localhost:{GlobalVars.Port}/");
-        listener.Prefixes.Add($"http://localhost:{GlobalVars.Port}/");
+        //listener.Prefixes.Add($"http://localhost:{GlobalVars.Port}/");
     }
 
     private static void RemoveBasePrefixes(HttpListener listener) => listener.Prefixes.Clear();
@@ -134,16 +135,38 @@ public class App
 
             if (requestContent.Contains('~'))
             {
-                string requestContentCall = requestContent.Split("~", StringSplitOptions.None)[0];
-                string requestContentJson = requestContent.Split("~", StringSplitOptions.None)[1];
-
-                if (Methods.TryGetValue(requestContentCall, out Action<string>? value))
+                string[] SplitRequest = requestContent.Split("~", StringSplitOptions.None);
+                string requestContentCall = SplitRequest[0];
+                string requestKey = SplitRequest[1] ?? "";
+                string requestContentJson = "";
+                if (SplitRequest.Length > 2)
                 {
-                    value.Invoke(requestContentJson);
+                    for (int i = 2; i < SplitRequest.Length; i++)
+                    {
+                        requestContentJson += SplitRequest[i];
+                        if (i != SplitRequest.Length - 1)
+                            requestContentJson += "~";
+                    }
+                }
+
+                if (!GlobalVars.PyProcesses.ContainsKey(requestKey) && requestContentCall != "CREATEINSTANCE" &&
+                    requestContentCall != "INITIALIZE")
+                {
+                    response.Headers.Add(HttpResponseHeader.Allow, "0");
+                    response.Close();
+                    continue;
+                }
+
+                if (Methods.TryGetValue(requestContentCall, out Action<string, string>? value))
+                {
+                    value.Invoke(requestKey, requestContentJson);
                     switch (requestContentCall)
                     {
+                        case "CREATEINSTANCE":
+                            responseMessage = Program.OpenPY();
+                            break;
                         case "GETENGINEMOVE":
-                            responseMessage = LastEngineMove;
+                            responseMessage = GlobalVars.PyProcesses[requestKey].GetLastEngineMove;
                             break;
                         case "INITIALIZE":
                             responseMessage = GlobalVars.Port.ToString();
