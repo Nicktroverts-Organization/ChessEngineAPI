@@ -3,7 +3,7 @@
 ## **How to setup**
 1. Install python.
 2. Open terminal and run "pip install chess".
-3. Enter Full Path to Stockfish.exe in the "StockfishPath" File.
+3. Enter Full Path to Stockfish.exe in the "StockFishPath" File.
 4. Enter Full Path to python.exe in the "PythonPath" File.
 5. Initialize and save the Port.
 6. CreateInstance and save the Key.
