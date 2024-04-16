@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Net.Http.Json;
-using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
 using ChessEngineAPI.App;
 
 AppDomain.CurrentDomain.ProcessExit += CloseHandler;
@@ -69,7 +66,10 @@ public partial class Program
     {
         //Open python script that runs chess engine.
         ProcessStartInfo start = new ProcessStartInfo();
-        start.FileName = "C:\\Users\\Praktikant\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\\python.exe";
+        FileStream fs = File.OpenRead("PythonPath");
+        StreamReader sreader = new StreamReader(fs);
+        string PythonPath = Convert.ToString(sreader.ReadToEnd());
+        start.FileName = PythonPath;
         start.Arguments = string.Format("{0}", "Python/ChessConnector.py");
         start.UseShellExecute = false;
         start.RedirectStandardOutput = true;
