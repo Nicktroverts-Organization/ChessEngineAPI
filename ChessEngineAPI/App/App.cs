@@ -71,8 +71,15 @@ public class App
         Methods.Add("MAKEMOVE", (value, value2) => MakeMoveRequest(value, value2));
         Methods.Add("GETENGINEMOVE", (value, value2) => EngineMoveRequest(value, value2));
         Methods.Add("CREATEINSTANCE", (value, value2) => CreateInstanceRequest(value, value2));
+        Methods.Add("REMOVEINSTANCE", (value, value2) => RemoveInstanceRequest(value, value2));
     }
 
+    [Requestable<string, string>]
+    private static void RemoveInstanceRequest(string key, string _Input)
+    {
+        GlobalVars.PyProcesses[key].GetProcess.Kill(true);
+        GlobalVars.PyProcesses.Remove(key);
+    }
     [Requestable<string, string>]
     private static void CreateInstanceRequest(string key, string _Input)
     {
