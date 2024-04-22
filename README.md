@@ -27,6 +27,9 @@
 - ECHO~{key}~{message to echo}
 
       Writes the specified message in th eapi console and responds with success.
+- REMOVEINSTANCE~{key}~
+
+      Deletes the specified Instance.
 
 
 ## Disclaimer: If you do something to break this on purpose i am not held responsible!
