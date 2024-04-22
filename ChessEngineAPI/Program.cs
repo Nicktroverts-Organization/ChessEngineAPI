@@ -71,7 +71,7 @@ Process process2;
 
 try
 {
-    process2 = Process.Start(PythonPath);
+    process2 = Process.Start(StockFishPath);
     process2.Kill(true);
 }
 catch
