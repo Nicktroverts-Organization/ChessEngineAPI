@@ -1,13 +1,94 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using ChessEngineAPI.App;
 
 AppDomain.CurrentDomain.ProcessExit += CloseHandler;
 
 Console.WriteLine("Initializing application...\n");
 
+string PythonPath = "";
+
+try
+{
+    FileStream fs = File.OpenRead("PythonPath");
+    StreamReader sreader = new StreamReader(fs);
+    PythonPath = Convert.ToString(sreader.ReadToEnd());
+    sreader.Close();
+    fs.Close();
+}
+catch
+{
+    Console.WriteLine("\nPython Path is invalid. Please enter new Path: ");
+    PythonPath = Console.ReadLine();
+    FileStream _fs = File.Create("PythonPath");
+    StreamWriter swrite = new StreamWriter(_fs);
+    swrite.WriteLine(PythonPath);
+    swrite.Close();
+    _fs.Close();
+}
+
+Process process;
+
+try
+{
+    process = Process.Start(PythonPath);
+    process.Kill(true);
+}
+catch
+{
+    Console.WriteLine("\nPython Path is invalid. Please enter new Path: ");
+    PythonPath = Console.ReadLine();
+    FileStream _fs = File.Create("PythonPath");
+    StreamWriter swrite = new StreamWriter(_fs);
+    swrite.WriteLine(PythonPath);
+    swrite.Close();
+    _fs.Close();
+}
+
+string StockFishPath = "";
+
+try
+{
+    FileStream fs2 = File.OpenRead("StockFishPath");
+    StreamReader sreader2 = new StreamReader(fs2);
+    StockFishPath = Convert.ToString(sreader2.ReadToEnd());
+    sreader2.Close();
+    fs2.Close();
+
+}
+catch
+{
+    Console.WriteLine("\nStockFish Path is invalid. Please enter new Path: ");
+    StockFishPath = Console.ReadLine();
+    FileStream _fs = File.Create("StockFishPath");
+    StreamWriter swrite = new StreamWriter(_fs);
+    swrite.WriteLine(StockFishPath);
+    swrite.Close();
+    _fs.Close();
+}
+
+Process process2;
+
+try
+{
+    process2 = Process.Start(PythonPath);
+    process2.Kill(true);
+}
+catch
+{
+    Console.WriteLine("\nStockFish Path is invalid. Please enter new Path: ");
+    StockFishPath = Console.ReadLine();
+    FileStream _fs = File.Create("StockFishPath");
+    StreamWriter swrite = new StreamWriter(_fs);
+    swrite.WriteLine(StockFishPath);
+    swrite.Close();
+    _fs.Close();
+}
+
+
 mainApp = new App();
 
-Console.WriteLine($"\nFinished initialization of application at port :{GlobalVars.Port}.");
+Console.WriteLine($"\n\nFinished initialization of application at port :{GlobalVars.Port}.");
 
 while (ApplicationIsRunning)
 {
@@ -60,6 +141,26 @@ public partial class Program
     private static void PyProcessOutputHandler(object sender, DataReceivedEventArgs args)
     {
         Console.WriteLine(sender.ToString() + " - " + args.Data.ToString());
+    }
+
+    public static bool ExistsOnPath(string exeName)
+    {
+        try
+        {
+            using (Process p = new Process())
+            {
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.FileName = "where";
+                p.StartInfo.Arguments = exeName;
+                p.Start();
+                p.WaitForExit();
+                return p.ExitCode == 0;
+            }
+        }
+        catch (Win32Exception)
+        {
+            throw new Exception("'where' command is not on path");
+        }
     }
 
     public static string OpenPY()
