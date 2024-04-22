@@ -1,4 +1,9 @@
-import chess
+try:
+    import chess
+except ImportError:
+    print("Trying to Install required module: chess\n")
+    os.system('python -m pip install chess')
+
 import chess.engine
 
 engine = chess.engine.SimpleEngine.popen_uci(open("StockFishPath").read())
