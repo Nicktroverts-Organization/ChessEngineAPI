@@ -143,26 +143,6 @@ public partial class Program
         Console.WriteLine(sender.ToString() + " - " + args.Data.ToString());
     }
 
-    public static bool ExistsOnPath(string exeName)
-    {
-        try
-        {
-            using (Process p = new Process())
-            {
-                p.StartInfo.UseShellExecute = false;
-                p.StartInfo.FileName = "where";
-                p.StartInfo.Arguments = exeName;
-                p.Start();
-                p.WaitForExit();
-                return p.ExitCode == 0;
-            }
-        }
-        catch (Win32Exception)
-        {
-            throw new Exception("'where' command is not on path");
-        }
-    }
-
     public static string OpenPY()
     {
         //Open python script that runs chess engine.
