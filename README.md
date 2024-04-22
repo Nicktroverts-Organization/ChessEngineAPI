@@ -4,9 +4,9 @@
 1. Install python.
 2. Enter Full Path to Stockfish.exe in the "StockFishPath" File.
 3. Enter Full Path to python.exe in the "PythonPath" File.
-4. Initialize and save the Port.
-5. CreateInstance and save the Key.
-6. You can now use this api.
+4. You can now use this api.
+5. Initialize and save the Port.
+6. CreateInstance and save the Key.
 
 ## **Commands:**
 - INITIALIZE~
