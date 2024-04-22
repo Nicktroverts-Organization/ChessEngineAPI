@@ -131,10 +131,6 @@ public class App
                 listener.Prefixes.Add($"http://{OwnIP}:{GlobalVars.Port}/");
             }
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-
-        }
     }
 
     private static void RemoveBasePrefixes(HttpListener listener) => listener.Prefixes.Clear();
