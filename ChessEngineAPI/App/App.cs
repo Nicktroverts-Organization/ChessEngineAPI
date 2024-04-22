@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 
 namespace ChessEngineAPI.App;
@@ -113,19 +114,26 @@ public class App
     private static void AddBasePrefixes(HttpListener listener)
     {
         listener.Prefixes.Add($"http://localhost:{GlobalVars.Port}/");
-        if (new WindowsPrincipal(WindowsIdentity.GetCurrent())
-            .IsInRole(WindowsBuiltInRole.Administrator))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            string OwnIP = "";
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
+            if (new WindowsPrincipal(WindowsIdentity.GetCurrent())
+                .IsInRole(WindowsBuiltInRole.Administrator))
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                string OwnIP = "";
+                var host = Dns.GetHostEntry(Dns.GetHostName());
+                foreach (var ip in host.AddressList)
                 {
-                    OwnIP = ip.ToString();
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        OwnIP = ip.ToString();
+                    }
                 }
+                listener.Prefixes.Add($"http://{OwnIP}:{GlobalVars.Port}/");
             }
-            listener.Prefixes.Add($"http://{OwnIP}:{GlobalVars.Port}/");
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+
         }
     }
 
