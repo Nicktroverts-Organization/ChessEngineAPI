@@ -112,6 +112,7 @@ public class App
     private static void AddBasePrefixes(HttpListener listener)
     {
         listener.Prefixes.Add($"http://localhost:{GlobalVars.Port}/");
+        listener.Prefixes.Add($"http://127.0.0.1:{GlobalVars.Port}/");
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             if (new WindowsPrincipal(WindowsIdentity.GetCurrent())
@@ -147,13 +148,6 @@ public class App
             StreamReader reader = new StreamReader(request.InputStream);
             string requestContent = reader.ReadToEnd();
 
-            if (GlobalVars.Port == 5555 && !requestContent.Contains("INITIALIZE~"))
-            {
-                response.Headers.Add(HttpResponseHeader.Allow, "0");
-                response.Close();
-                continue;
-            }
-
             string responseMessage = "Placeholder";
 
             if (requestContent.Contains('~'))
@@ -172,10 +166,9 @@ public class App
                     }
                 }
 
-                if (!GlobalVars.PyProcesses.ContainsKey(requestKey) && requestContentCall != "CREATEINSTANCE" &&
-                    requestContentCall != "INITIALIZE")
+                if (!GlobalVars.PyProcesses.ContainsKey(requestKey) && requestContentCall != "CREATEINSTANCE")
                 {
-                    response.Headers.Add(HttpResponseHeader.Allow, "0");
+                    response.Headers.Add(HttpResponseHeader.Warning, "0");
                     response.Close();
                     continue;
                 }
@@ -191,21 +184,6 @@ public class App
                         case "GETENGINEMOVE":
                             responseMessage = GlobalVars.PyProcesses[requestKey].GetLastEngineMove;
                             break;
-                        case "INITIALIZE":
-                            responseMessage = GlobalVars.Port.ToString();
-                            response.Headers.Add("Access-Control-Allow-Origin", "*");
-                            string InresponseString = $"{responseMessage}";
-                            byte[] Inbuffer = System.Text.Encoding.UTF8.GetBytes(InresponseString);
-                            response.ContentLength64 = Inbuffer.Length;
-                            Stream Inoutput = response.OutputStream;
-                            Inoutput.Write(Inbuffer, 0, Inbuffer.Length);
-                            Inoutput.Close();
-                            response.Close();
-                            listener.Stop();
-                            RemoveBasePrefixes(listener);
-                            AddBasePrefixes(listener);
-                            listener.Start();
-                            continue;
                         default:
                             responseMessage = "Success.";
                             break;
